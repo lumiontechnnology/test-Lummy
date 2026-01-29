@@ -1,1 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  companyName   String    @map("company_name")
+  industry      String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  agents        Agent[]
+  
+  @@map("users")
+}
+
+model Agent {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  name            String
+  status          AgentStatus @default(LEARNING)
+  learningStage   Int       @default(0) @map("learning_stage")
+  voiceProfile    Json      @default("{}") @map("voice_profile")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations   Conversation[]
+  learningData    LearningData[]
+  voicePatterns   VoicePattern[]
+  
+  @@map("agents")
+}
+
+enum AgentStatus {
+  LEARNING
+  ACTIVE
+  PAUSED
+}
+
+model Conversation {
+  id              String    @id @default(uuid())
+  agentId         String    @map("agent_id")
+  customerEmail   String?   @map("customer_email")
+  customerName    String?   @map("customer_name")
+  channel         Channel   @default(CHAT)
+  status          ConversationStatus @default(ACTIVE)
+  sentiment       Float?
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  agent           Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  messages        Message[]
+  learningData    LearningData[]
+  
+  @@map("conversations")
+}
+
+enum Channel {
+  EMAIL
+  CHAT
+  PHONE
+  SLACK
+}
+
+enum ConversationStatus {
+  ACTIVE
+  RESOLVED
+  ESCALATED
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  conversationId  String    @map("conversation_id")
+  senderType      SenderType @map("sender_type")
+  content         String
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+enum SenderType {
+  CUSTOMER
+  AI
+  HUMAN
+}
+
+model LearningData {
+  id                String    @id @default(uuid())
+  agentId           String    @map("agent_id")
+  conversationId    String?   @map("conversation_id")
+  interactionType   String    @map("interaction_type")
+  patternDetected   Json      @map("pattern_detected")
+  confidenceScore   Float     @map("confidence_score")
+  applied           Boolean   @default(false)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  
+  agent             Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  conversation      Conversation? @relation(fields: [conversationId], references: [id])
+  
+  @@map("learning_data")
+}
+
+model VoicePattern {
+  id              String    @id @default(uuid())
+  agentId         String    @map("agent_id")
+  patternType     PatternType @map("pattern_type")
+  patternData     Json      @map("pattern_data")
+  frequency       Int       @default(0)
+  lastUsed        DateTime? @map("last_used")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  agent           Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  @@map("voice_patterns")
+}
+
+enum PatternType {
+  GREETING
+  CLOSING
+  TONE
+  VOCABULARY
+  STRUCTURE
+}
