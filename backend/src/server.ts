@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import prisma from './config/database';
 
 import { connectRedis } from './config/redis';
 import { apiLimiter } from './middleware/rateLimiter';
@@ -26,6 +28,25 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+});
+
+io.use(async (socket: any, next: any) => {
+  try {
+    const raw = socket.handshake.auth?.token as string | undefined;
+    const token = raw && raw.startsWith('Bearer ') ? raw.slice(7) : raw;
+    if (!token) {
+      return next(new Error('Unauthorized'));
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; email: string };
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, email: true } });
+    if (!user) {
+      return next(new Error('Unauthorized'));
+    }
+    (socket as any).data = { user };
+    next();
+  } catch {
+    next(new Error('Unauthorized'));
+  }
 });
 
 // Middleware

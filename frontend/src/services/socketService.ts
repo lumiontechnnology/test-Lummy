@@ -45,4 +45,28 @@ export const socketService = {
       socket.on('ai-response', callback);
     }
   },
+
+  getConversations(agentId: string) {
+    if (socket) {
+      socket.emit('get-conversations', { agentId });
+    }
+  },
+
+  onConversations(callback: (data: any) => void) {
+    if (socket) {
+      socket.on('conversations', callback);
+    }
+  },
+
+  getConversation(id: string) {
+    if (socket) {
+      socket.emit('get-conversation', { id });
+    }
+  },
+
+  onConversation(callback: (data: any) => void) {
+    if (socket) {
+      socket.on('conversation', callback);
+    }
+  },
 };

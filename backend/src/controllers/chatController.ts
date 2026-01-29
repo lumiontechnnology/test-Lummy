@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import prisma from '../config/database';
-import claudeService from '../services/ai/claude.service';
+import claudeService from '../services/ai/claudeService';
 
 export class ChatController {
   async handleMessage(socket: Socket, data: any) {
@@ -35,8 +35,12 @@ export class ChatController {
       const agent = await prisma.agent.findUnique({
         where: { id: agentId },
       });
+      if (!agent || agent.userId !== (socket.data as any)?.user?.id) {
+        socket.emit('error', { message: 'Unauthorized' });
+        return;
+      }
 
-      const history = conversation.messages.map(m => ({
+      const history = conversation.messages.map((m: any) => ({
         role: m.senderType === 'CUSTOMER' ? 'user' as const : 'assistant' as const,
         content: m.content,
       }));
@@ -74,6 +78,57 @@ export class ChatController {
     } catch (error) {
       console.error('Chat error:', error);
       socket.emit('error', { message: 'Failed to process message' });
+    }
+  }
+
+  async getConversations(socket: Socket, data: any) {
+    try {
+      const { agentId } = data;
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { id: true, userId: true },
+      });
+      if (!agent || agent.userId !== (socket.data as any)?.user?.id) {
+        socket.emit('error', { message: 'Unauthorized' });
+        return;
+      }
+      const conversations = await prisma.conversation.findMany({
+        where: { agentId },
+        include: {
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+      socket.emit('conversations', { conversations });
+    } catch (error) {
+      socket.emit('error', { message: 'Failed to fetch conversations' });
+    }
+  }
+
+  async getConversation(socket: Socket, data: any) {
+    try {
+      const { id } = data;
+      const conversation = await prisma.conversation.findUnique({
+        where: { id },
+        include: {
+          messages: { orderBy: { createdAt: 'asc' } },
+          agent: { select: { id: true, userId: true, name: true } },
+        },
+      });
+      if (!conversation) {
+        socket.emit('error', { message: 'Conversation not found' });
+        return;
+      }
+      if (conversation.agent.userId !== (socket.data as any)?.user?.id) {
+        socket.emit('error', { message: 'Unauthorized' });
+        return;
+      }
+      socket.emit('conversation', { conversation });
+    } catch (error) {
+      socket.emit('error', { message: 'Failed to fetch conversation' });
     }
   }
 }

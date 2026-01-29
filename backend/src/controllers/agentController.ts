@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
-import learningService from '../services/learning/learningService';
+import learningService from '../services/learning/voice.service';
 
 export class AgentController {
   async getAgents(req: AuthRequest, res: Response) {

@@ -1,5 +1,5 @@
 import prisma from '../../config/database';
-import claudeService from '../ai/claude.service';
+import claudeService from '../ai/claudeService';
 
 export class VoiceService {
   async buildVoiceProfile(agentId: string) {
@@ -13,7 +13,7 @@ export class VoiceService {
       },
     });
 
-    const allMessages = conversations.flatMap(c => c.messages);
+    const allMessages = conversations.flatMap((c: any) => c.messages);
     
     if (allMessages.length === 0) {
       return this.getDefaultVoiceProfile();

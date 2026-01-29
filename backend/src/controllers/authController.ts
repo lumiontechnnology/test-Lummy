@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
@@ -75,6 +76,17 @@ export class AuthController {
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ error: 'Login failed' });
+    }
+  }
+
+  async me(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      res.json({ user: req.user });
+    } catch {
+      res.status(500).json({ error: 'Failed to fetch user' });
     }
   }
 
