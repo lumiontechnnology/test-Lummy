@@ -51,8 +51,17 @@ io.use(async (socket: any, next: any) => {
 
 // Middleware
 app.use(helmet());
-app.use(cors({ 
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+const allowedOrigins = [
+  process.env.CORS_ORIGIN,
+  'http://localhost:3000',
+  'http://localhost:5173',
+].filter(Boolean) as string[];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 app.use(express.json());
@@ -70,6 +79,14 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Health check under /api (will be rate limited)
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+  });
+});
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/agents', agentRoutes);
@@ -140,6 +157,7 @@ const startServer = async () => {
       console.log(`Port: ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`Health Check: http://localhost:${PORT}/health`);
+      console.log(`API Health: http://localhost:${PORT}/api/health`);
       console.log('========================================');
       console.log('');
     });

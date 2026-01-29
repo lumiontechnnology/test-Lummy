@@ -10,7 +10,7 @@ export const ChatWidget: React.FC = () => {
 
   useEffect(() => {
     if (agentId) {
-      socketService.connect(agentId);
+      socketService.connect();
       
       socketService.onMessage((data) => {
         setMessages((prev) => [...prev, { role: 'ai', content: data.message }]);

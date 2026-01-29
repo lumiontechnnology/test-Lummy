@@ -8,17 +8,18 @@ import api from '../../services/api';
 
 export const Overview: React.FC = () => {
   const [stats, setStats] = useState({
-    totalConversations: 156,
-    resolvedConversations: 142,
-    activeConversations: 14,
+    totalConversations: 0,
+    resolvedConversations: 0,
+    activeConversations: 0,
     avgResponseTime: 2.3,
-    learningProgress: 78,
+    learningProgress: 0,
     customerSatisfaction: 4.6,
-    escalationRate: 5.1,
+    escalationRate: 0,
   });
 
   const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState('7d');
+  const [agentId, setAgentId] = useState<string | null>(null);
 
   const conversationData = [
     { day: 'Mon', conversations: 18, resolved: 16, escalated: 2 },
@@ -49,9 +50,32 @@ export const Overview: React.FC = () => {
   const loadStats = async () => {
     setLoading(true);
     try {
-      // API call would go here
-      // For now using demo data
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Fetch agents and pick the first
+      const agentsRes = await api.get('/agents');
+      const firstAgent = agentsRes.data?.[0];
+      if (!firstAgent) {
+        setStats((s) => ({ ...s, totalConversations: 0, resolvedConversations: 0, activeConversations: 0, learningProgress: 0, escalationRate: 0 }));
+        setAgentId(null);
+        return;
+      }
+      setAgentId(firstAgent.id);
+
+      // Fetch stats for the selected agent
+      const statsRes = await api.get(`/agents/${firstAgent.id}/stats`);
+      const srv = statsRes.data?.stats || {};
+      const escalationRate = srv.totalConversations > 0 
+        ? Math.round(((srv.totalConversations - srv.resolvedConversations) / srv.totalConversations) * 1000) / 10 
+        : 0;
+
+      setStats({
+        totalConversations: srv.totalConversations || 0,
+        resolvedConversations: srv.resolvedConversations || 0,
+        activeConversations: srv.activeConversations || 0,
+        avgResponseTime: 2.3, // placeholder until backend provides this
+        learningProgress: srv.learningProgress || 0,
+        customerSatisfaction: 4.6, // placeholder demo value
+        escalationRate,
+      });
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {

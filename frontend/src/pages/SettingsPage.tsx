@@ -250,7 +250,7 @@ export const SettingsPage: React.FC = () => {
                   onChange={(e) => setAgentSettings({ ...agentSettings, responseSpeed: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary"
                 >
-                  <option value="instant">Instant (< 1 second)</option>
+                  <option value="instant">Instant (&lt; 1 second)</option>
                   <option value="fast">Fast (1-2 seconds)</option>
                   <option value="thoughtful">Thoughtful (3-5 seconds)</option>
                 </select>

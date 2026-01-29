@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import prisma from '../config/database';
 import voiceService from '../services/learning/voice.service';
+import agentController from '../controllers/agentController';
 
 const router = Router();
 
@@ -44,5 +45,8 @@ router.post('/:id/rebuild-voice', authenticate, async (req: AuthRequest, res) =>
   }
 });
 
-export default router;
+router.get('/:id/stats', authenticate, (req, res) => 
+  agentController.getAgentStats(req as any, res)
+);
 
+export default router;

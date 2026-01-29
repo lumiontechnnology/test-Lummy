@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Eye } from 'lucide-react';
+import { MessageSquare, Search, CheckCircle, Clock, AlertCircle, Eye } from 'lucide-react';
 import api from '../services/api';
-import { format } from 'date-fns';
+ 
 
 interface Conversation {
   id: string;
@@ -33,97 +33,67 @@ export const ConversationsPage: React.FC = () => {
   const loadConversations = async () => {
     try {
       setLoading(true);
-      // This will be implemented when we add the conversations endpoint
-      // For now, showing demo data
-      const demoConversations: Conversation[] = [
-        {
-          id: '1',
-          customerName: 'John Smith',
-          customerEmail: 'john@example.com',
-          status: 'RESOLVED',
-          channel: 'CHAT',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          messages: [
-            {
-              id: '1',
-              content: 'Hi, I need help with my order',
-              senderType: 'CUSTOMER',
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: '2',
-              content: 'Hello John! I\'d be happy to help you with your order. Could you please provide your order number?',
-              senderType: 'AI',
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000 + 30000).toISOString(),
-            },
-            {
-              id: '3',
-              content: 'It\'s #12345',
-              senderType: 'CUSTOMER',
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000 + 60000).toISOString(),
-            },
-            {
-              id: '4',
-              content: 'Thank you! I can see your order is currently being processed and will ship within 24 hours. You\'ll receive a tracking number via email once it ships.',
-              senderType: 'AI',
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000 + 90000).toISOString(),
-            },
-          ],
-        },
-        {
-          id: '2',
-          customerName: 'Sarah Johnson',
-          customerEmail: 'sarah@example.com',
-          status: 'ACTIVE',
-          channel: 'CHAT',
-          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-          messages: [
-            {
-              id: '5',
-              content: 'Do you offer international shipping?',
-              senderType: 'CUSTOMER',
-              createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-            },
-            {
-              id: '6',
-              content: 'Yes, we do! We ship to over 50 countries worldwide. Shipping times vary by location, typically 5-10 business days. Would you like to know the shipping cost for your country?',
-              senderType: 'AI',
-              createdAt: new Date(Date.now() - 29 * 60 * 1000).toISOString(),
-            },
-          ],
-        },
-        {
-          id: '3',
-          customerName: 'Mike Chen',
-          customerEmail: 'mike@example.com',
-          status: 'ESCALATED',
-          channel: 'EMAIL',
-          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          messages: [
-            {
-              id: '7',
-              content: 'I received a damaged product and need a refund immediately.',
-              senderType: 'CUSTOMER',
-              createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: '8',
-              content: 'I\'m very sorry to hear about the damaged product. Let me escalate this to our support team right away for immediate assistance with your refund.',
-              senderType: 'AI',
-              createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-            },
-          ],
-        },
-      ];
-      
-      setConversations(demoConversations);
+      // Get user's agents and pick the first
+      const agentsRes = await api.get('/agents');
+      const firstAgent = agentsRes.data?.[0];
+      if (!firstAgent) {
+        setConversations([]);
+        return;
+      }
+
+      // Fetch conversations for the selected agent
+      const convRes = await api.get(`/conversations/agent/${firstAgent.id}`);
+      const items: Conversation[] = (convRes.data?.conversations || []).map((c: any) => ({
+        id: c.id,
+        customerName: c.customerName,
+        customerEmail: c.customerEmail,
+        status: c.status,
+        channel: c.channel,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        messages: c.messages || [],
+      }));
+      setConversations(items);
     } catch (error) {
       console.error('Failed to load conversations:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const selectConversation = async (conv: Conversation) => {
+    try {
+      setSelectedConversation(conv);
+      const res = await api.get(`/conversations/${conv.id}`);
+      const full = res.data?.conversation;
+      if (full) {
+        setSelectedConversation({
+          id: full.id,
+          customerName: full.customerName,
+          customerEmail: full.customerEmail,
+          status: full.status,
+          channel: full.channel,
+          createdAt: full.createdAt,
+          updatedAt: full.updatedAt,
+          messages: full.messages || [],
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load conversation:', error);
+    }
+  };
+
+  const updateStatus = async (status: 'ACTIVE' | 'RESOLVED' | 'ESCALATED') => {
+    if (!selectedConversation) return;
+    try {
+      const res = await api.patch(`/conversations/${selectedConversation.id}/status`, { status });
+      const updated = res.data?.conversation;
+      if (updated) {
+        setSelectedConversation((prev) => prev ? { ...prev, status: updated.status, updatedAt: updated.updatedAt } : prev);
+        setConversations((list) => list.map((c) => c.id === updated.id ? { ...c, status: updated.status, updatedAt: updated.updatedAt } : c));
+      }
+    } catch (error) {
+      console.error('Failed to update status:', error);
     }
   };
 
@@ -215,7 +185,7 @@ export const ConversationsPage: React.FC = () => {
             filteredConversations.map((conv) => (
               <div
                 key={conv.id}
-                onClick={() => setSelectedConversation(conv)}
+                onClick={() => selectConversation(conv)}
                 className={`bg-white/5 border border-white/10 rounded-lg p-4 cursor-pointer transition-all hover:bg-white/10 ${
                   selectedConversation?.id === conv.id ? 'border-primary bg-white/10' : ''
                 }`}
@@ -241,7 +211,7 @@ export const ConversationsPage: React.FC = () => {
                 
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span className="bg-white/5 px-2 py-1 rounded">{conv.channel}</span>
-                  <span>{format(new Date(conv.updatedAt), 'MMM d, h:mm a')}</span>
+                  <span>{new Date(conv.updatedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
                 </div>
               </div>
             ))
@@ -275,7 +245,7 @@ export const ConversationsPage: React.FC = () => {
                 <div className="bg-white/5 px-3 py-2 rounded-lg">
                   <span className="text-gray-400">Started:</span>{' '}
                   <span className="text-white font-medium">
-                    {format(new Date(selectedConversation.createdAt), 'MMM d, yyyy h:mm a')}
+                    {new Date(selectedConversation.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                   </span>
                 </div>
               </div>
@@ -302,7 +272,7 @@ export const ConversationsPage: React.FC = () => {
                         {msg.senderType === 'CUSTOMER' ? 'Customer' : msg.senderType === 'AI' ? 'Lummy AI' : 'Human Agent'}
                       </span>
                       <span className="text-xs opacity-50">
-                        {format(new Date(msg.createdAt), 'h:mm a')}
+                        {new Date(msg.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                       </span>
                     </div>
                     <p className="text-sm leading-relaxed">{msg.content}</p>
@@ -316,16 +286,16 @@ export const ConversationsPage: React.FC = () => {
               <div className="flex gap-3">
                 {selectedConversation.status === 'ACTIVE' && (
                   <>
-                    <button className="flex-1 bg-green-500/20 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg font-semibold hover:bg-green-500/30 transition-all">
+                    <button onClick={() => updateStatus('RESOLVED')} className="flex-1 bg-green-500/20 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg font-semibold hover:bg-green-500/30 transition-all">
                       Mark as Resolved
                     </button>
-                    <button className="flex-1 bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg font-semibold hover:bg-red-500/30 transition-all">
+                    <button onClick={() => updateStatus('ESCALATED')} className="flex-1 bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg font-semibold hover:bg-red-500/30 transition-all">
                       Escalate to Human
                     </button>
                   </>
                 )}
                 {selectedConversation.status === 'RESOLVED' && (
-                  <button className="flex-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-3 rounded-lg font-semibold hover:bg-blue-500/30 transition-all">
+                  <button onClick={() => updateStatus('ACTIVE')} className="flex-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-3 rounded-lg font-semibold hover:bg-blue-500/30 transition-all">
                     Reopen Conversation
                   </button>
                 )}
