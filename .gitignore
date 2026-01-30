@@ -7,6 +7,8 @@ frontend/node_modules/
 dist/
 backend/dist/
 frontend/dist/
+frontend/.next/
+.next/
 
 # Env files
 .env

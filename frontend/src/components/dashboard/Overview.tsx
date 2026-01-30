@@ -19,7 +19,7 @@ export const Overview: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState('7d');
-  const [agentId, setAgentId] = useState<string | null>(null);
+  const [, setAgentId] = useState<string | null>(null);
 
   const conversationData = [
     { day: 'Mon', conversations: 18, resolved: 16, escalated: 2 },

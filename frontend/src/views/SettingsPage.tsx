@@ -11,7 +11,6 @@ export const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [saved, setSaved] = useState(false);
 
-  // Form states
   const [profileData, setProfileData] = useState({
     companyName: user?.companyName || '',
     email: user?.email || '',
@@ -63,7 +62,6 @@ export const SettingsPage: React.FC = () => {
         <p className="text-gray-400">Manage your account and AI agent configuration</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-white/10">
         {tabs.map((tab) => (
           <button
@@ -84,7 +82,6 @@ export const SettingsPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -186,7 +183,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* AI Agent Tab */}
       {activeTab === 'agent' && (
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -296,7 +292,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Integrations Tab */}
       {activeTab === 'integrations' && (
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -340,7 +335,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Notifications Tab */}
       {activeTab === 'notifications' && (
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -415,3 +409,5 @@ export const SettingsPage: React.FC = () => {
     </div>
   );
 };
+
+export default SettingsPage;

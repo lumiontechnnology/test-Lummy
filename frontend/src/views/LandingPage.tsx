@@ -8,7 +8,6 @@ import { SplineScene } from '../components/ui/spline';
 export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
-      {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-xl font-bold bg-gradient-to-r from-[#0047FF] to-[#0066FF] bg-clip-text text-transparent">
@@ -28,7 +27,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero Section with 3D */}
       <section className="pt-32 pb-20 px-6 relative">
         <Card className="max-w-7xl mx-auto bg-black/[0.96] border-white/10 overflow-hidden relative">
           <Spotlight
@@ -37,7 +35,6 @@ export const LandingPage: React.FC = () => {
           />
           
           <div className="grid md:grid-cols-2 gap-8 min-h-[600px]">
-            {/* Left content */}
             <div className="p-12 relative z-10 flex flex-col justify-center">
               <div className="inline-flex items-center gap-2 bg-[#0047FF]/10 border border-[#0047FF]/20 rounded-full px-4 py-2 mb-6 w-fit">
                 <Sparkles className="text-[#0047FF]" size={16} />
@@ -69,7 +66,6 @@ export const LandingPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-white/10">
                 <div>
                   <div className="text-3xl font-bold text-[#0047FF]">90%</div>
@@ -86,7 +82,6 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right content - 3D Scene */}
             <div className="relative flex items-center justify-center p-8">
               <div className="w-full h-full min-h-[500px] relative">
                 <SplineScene 
@@ -99,7 +94,6 @@ export const LandingPage: React.FC = () => {
         </Card>
       </section>
 
-      {/* Features Grid */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -154,7 +148,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="py-24 px-6 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0047FF]/5 to-transparent pointer-events-none" />
         
@@ -184,7 +177,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-12">Trusted by forward-thinking companies</h2>
@@ -206,7 +198,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-24 px-6">
         <Card className="max-w-5xl mx-auto bg-gradient-to-br from-[#0047FF]/20 to-[#0066FF]/20 border-[#0047FF]/30 relative overflow-hidden">
           <Spotlight
@@ -245,7 +236,6 @@ export const LandingPage: React.FC = () => {
         </Card>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
@@ -329,3 +319,5 @@ const StepCard: React.FC<{ number: string; title: string; description: string }>
     </div>
   </div>
 );
+
+export default LandingPage;

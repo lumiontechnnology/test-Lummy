@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 export const socketService = {
   connect() {
     if (!socket) {
-      socket = io(import.meta.env.VITE_WS_URL || 'http://localhost:5000', {
+      socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000', {
         auth: {
           token: localStorage.getItem('token'),
         },

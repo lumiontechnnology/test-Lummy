@@ -33,7 +33,6 @@ export const ConversationsPage: React.FC = () => {
   const loadConversations = async () => {
     try {
       setLoading(true);
-      // Get user's agents and pick the first
       const agentsRes = await api.get('/agents');
       const firstAgent = agentsRes.data?.[0];
       if (!firstAgent) {
@@ -41,7 +40,6 @@ export const ConversationsPage: React.FC = () => {
         return;
       }
 
-      // Fetch conversations for the selected agent
       const convRes = await api.get(`/conversations/agent/${firstAgent.id}`);
       const items: Conversation[] = (convRes.data?.conversations || []).map((c: any) => ({
         id: c.id,
@@ -135,14 +133,12 @@ export const ConversationsPage: React.FC = () => {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex gap-6">
-      {/* Conversations List */}
       <div className="w-96 flex flex-col">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Conversations</h1>
           <p className="text-gray-400">View and manage customer conversations</p>
         </div>
 
-        {/* Search and Filter */}
         <div className="mb-4 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -172,7 +168,6 @@ export const ConversationsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Conversations List */}
         <div className="flex-1 overflow-y-auto space-y-2">
           {loading ? (
             <div className="text-center text-gray-400 py-8">Loading conversations...</div>
@@ -219,11 +214,9 @@ export const ConversationsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Conversation Detail */}
       <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl flex flex-col">
         {selectedConversation ? (
           <>
-            {/* Header */}
             <div className="border-b border-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -251,7 +244,6 @@ export const ConversationsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {selectedConversation.messages.map((msg) => (
                 <div
@@ -281,7 +273,6 @@ export const ConversationsPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Actions */}
             <div className="border-t border-white/10 p-4">
               <div className="flex gap-3">
                 {selectedConversation.status === 'ACTIVE' && (
@@ -319,3 +310,5 @@ export const ConversationsPage: React.FC = () => {
     </div>
   );
 };
+
+export default ConversationsPage;

@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { LandingPage } from './pages/LandingPage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
+import { LandingPage } from './views/LandingPage';
+import { LoginPage } from './views/LoginPage';
+import { RegisterPage } from './views/RegisterPage';
 import { DashboardLayout } from './components/dashboard/DashboardLayout';
 import { Overview } from './components/dashboard/Overview';
-import { ConversationsPage } from './pages/ConversationsPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { ConversationsPage } from './views/ConversationsPage';
+import { SettingsPage } from './views/SettingsPage';
 import { ChatWidget } from './components/chat/ChatWidget';
 import { useAuthStore } from './contexts/AuthContext';
 
